@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jehu Mtine</title>
+<script>(function(){var u=navigator.userAgent||'',p=/Android.*Mobile|iPhone|iPod|Windows Phone|BlackBerry|Opera Mini|IEMobile|webOS/i.test(u)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500)||location.search.indexOf('phone')>-1;if(p)document.documentElement.classList.add('phone')})();</script>
 <meta name="description" content="Jehu Mtine. Building @ argonintelligence.org, and going from the beginning of the computing age to the stars.">
 <meta name="theme-color" content="#2c4a68">
 <link rel="icon" href="favicon.ico" sizes="48x48">
@@ -135,6 +136,17 @@ a.pill{text-decoration:none;font-size:.82rem}
 .insc blockquote .mono{margin-top:1.2rem}
 .read .done{display:block;margin-top:.3rem;color:var(--blue)}
 .read .cat:nth-child(5){margin-top:0}
+.guard{display:none}
+html.phone body>*:not(.guard),html.phone .frame{display:none!important}
+html.phone body{background:var(--paper)}
+html.phone .guard{display:block;position:fixed;inset:0;z-index:999;background:var(--paper);padding:8px}
+.gin{position:relative;height:100%;background:var(--blue);border-radius:16px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:1.5rem;padding:2rem 1.6rem;color:var(--paper)}
+.gin svg{width:8rem;height:auto;overflow:visible}
+.gin svg line{stroke:var(--paper);stroke-opacity:.6;stroke-width:1}
+.gin svg circle{fill:var(--paper)}
+.gin p{font-family:var(--disp);font-weight:800;font-size:clamp(1.5rem,7.2vw,2.2rem);line-height:1.15;letter-spacing:-.05em;margin:0}
+.gin .mono{color:var(--pale)}
+.gin .seal{position:absolute;top:1.6rem;right:1.6rem;width:2.8rem;height:2.8rem;font-size:1.5rem}
 .beam{animation:beam 7s linear infinite}@keyframes beam{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.star{animation:none}html{scroll-behavior:auto}}
 @media (max-width:640px){
@@ -147,6 +159,13 @@ a.pill{text-decoration:none;font-size:.82rem}
 </style>
 </head>
 <body>
+<div class="guard" role="alert"><div class="gin">
+  <div class="seal" lang="ja">星</div>
+  <svg viewBox="0 0 120 50" aria-hidden="true"><line x1="8" y1="38" x2="34" y2="20"/><line x1="34" y1="20" x2="60" y2="28"/><line x1="60" y1="28" x2="84" y2="8"/><line x1="84" y1="8" x2="112" y2="24"/><g class="star"><circle cx="8" cy="38" r="2.2"/><circle cx="34" cy="20" r="2.6"/><circle cx="60" cy="28" r="2.2"/><circle cx="84" cy="8" r="3.2"/><circle cx="112" cy="24" r="2.2"/></g></svg>
+  <p>It wouldn't be an art piece if you could view it on mobile.</p>
+  <span class="mono">Please open this on a desktop.</span>
+  <span class="mono">Jehu Mtine</span>
+</div></div>
 <div id="field"><svg id="site" role="img" aria-label="Small figures carrying stone blocks and building a Roman temple under a field of stars; each joint becomes a star in a constellation"></svg></div>
 <div class="frame"></div>
 <div class="bar mono"><span>Jehu Mtine · Lusaka</span><span><a href="#belief">Belief</a><a href="#building">Projects</a><a href="#inspo">Inspo</a><a href="#reading">Reading</a><a href="#contact">Contact</a></span></div>
@@ -171,7 +190,6 @@ a.pill{text-decoration:none;font-size:.82rem}
   <a class="go" href="https://argonintelligence.org" target="_blank" rel="noopener">building @ argonintelligence.org ↗</a>
   <div class="cards" style="margin-top:2rem">
     <div class="card"><div class="r">i</div><h3>F1 Replay</h3><p>A desktop replay of Formula 1 sessions, written in Rust on my own f1-data crate. Track map, HUD, leaderboard and telemetry charts.</p><span class="mono tag">Rust · Bevy · egui</span></div>
-    <div class="card"><div class="r">ii</div><h3>Truthseeker</h3><p>A desktop data analysis tool from Argon. Local storage on DuckDB, with a licensing backend on Cloudflare Workers.</p><span class="mono tag">Tauri · DuckDB · Workers</span></div>
   </div>
 </section>
 
@@ -187,7 +205,7 @@ a.pill{text-decoration:none;font-size:.82rem}
 
 <section id="soundtrack" class="wrap" style="padding-top:9rem">
   <div class="head"><b>V</b><span class="mono">Soundtrack</span></div>
-  <div class="panel"><p>The playlist that inspired the design of this site.</p><a class="go" href="https://open.spotify.com/playlist/4lpwThdhNV0W4NSD8n6mWr" target="_blank" rel="noopener">♪ Design playlist on Spotify ↗</a></div>
+  <div class="panel"><p>The playlist that goes along with this site.</p><a class="go" href="https://open.spotify.com/playlist/4lpwThdhNV0W4NSD8n6mWr" target="_blank" rel="noopener">♪ Design playlist on Spotify ↗</a></div>
 </section>
 
 <section id="elsewhere" class="wrap" style="padding-top:9rem">
@@ -214,6 +232,7 @@ a.pill{text-decoration:none;font-size:.82rem}
 
 <script>
 (function(){
+if(document.documentElement.classList.contains('phone'))return;
 var field=document.getElementById('field'),svg=document.getElementById('site'),NS='http://www.w3.org/2000/svg',INK='#f6f4ee',G=310,JY=-44,CX=660;
 function el(n,a,p){var e=document.createElementNS(NS,n);for(var q in a)e.setAttribute(q,a[q]);(p||svg).appendChild(e);return e}
 var seed=5;function R(){seed=(seed*9301+49297)%233280;return seed/233280}
