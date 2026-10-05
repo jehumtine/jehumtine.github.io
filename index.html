@@ -130,6 +130,11 @@ a.pill{text-decoration:none;font-size:.82rem}
 .track{position:relative;height:6px;margin-top:.55rem;background:rgba(246,244,238,.2);background-image:repeating-linear-gradient(90deg,transparent 0 calc(8.3333% - 1px),rgba(44,74,104,.95) calc(8.3333% - 1px) 8.3333%);border-radius:1px}
 .track i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--paper);transition:width 1.8s cubic-bezier(.2,.7,.2,1)}
 .track i::after{content:"";position:absolute;right:-4px;top:-3px;width:12px;height:12px;border-radius:50%;background:var(--paper);box-shadow:0 0 10px 2px rgba(246,244,238,.65);animation:tw 3s ease-in-out infinite}
+.insc blockquote{margin:0 auto;max-width:56rem;text-align:left}
+.insc blockquote p{font-size:clamp(1.05rem,2.6vw,2rem);font-weight:700;line-height:1.35;letter-spacing:-.03em}
+.insc blockquote .mono{margin-top:1.2rem}
+.read .done{display:block;margin-top:.3rem;color:var(--blue)}
+.read .cat:nth-child(5){margin-top:0}
 .beam{animation:beam 7s linear infinite}@keyframes beam{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.star{animation:none}html{scroll-behavior:auto}}
 @media (max-width:640px){
@@ -144,7 +149,7 @@ a.pill{text-decoration:none;font-size:.82rem}
 <body>
 <div id="field"><svg id="site" role="img" aria-label="Small figures carrying stone blocks and building a Roman temple under a field of stars; each joint becomes a star in a constellation"></svg></div>
 <div class="frame"></div>
-<div class="bar mono"><span>Jehu Mtine · Lusaka</span><span><a href="#belief">Belief</a><a href="#building">Building</a><a href="#inspo">Inspo</a><a href="#reading">Reading</a><a href="#contact">Contact</a></span></div>
+<div class="bar mono"><span>Jehu Mtine · Lusaka</span><span><a href="#belief">Belief</a><a href="#building">Projects</a><a href="#inspo">Inspo</a><a href="#reading">Reading</a><a href="#contact">Contact</a></span></div>
 
 <main>
 <header class="hero">
@@ -158,15 +163,15 @@ a.pill{text-decoration:none;font-size:.82rem}
 
 <section id="belief" class="wrap" style="padding-top:12rem">
   <div class="head"><b>I</b><span class="mono">Belief</span></div>
-  <div class="cards"><div class="card quote" style="grid-column:1/-1"><p>I believe we are still at the beginning of the computing age and so I dedicate my time to going away from the beginning to the stars.</p></div></div>
+  <div class="cards"><div class="card quote" style="grid-column:1/-1"><p>“I believe we are still at the beginning of the computing age and so I dedicate my time to going away from the beginning to the stars.”</p></div></div>
 </section>
 
 <section id="building" class="wrap" style="padding-top:12rem">
   <div class="head"><b>II</b><span class="mono">Recent Projects</span></div>
   <a class="go" href="https://argonintelligence.org" target="_blank" rel="noopener">building @ argonintelligence.org ↗</a>
   <div class="cards" style="margin-top:2rem">
-    <div class="card"><div class="r">i</div><h3>f1-viz-rs</h3><p>A desktop replay of Formula 1 sessions, written in Rust on my own f1-data crate. Track map, HUD, leaderboard and telemetry charts.</p><span class="mono tag">Rust · Bevy · egui</span></div>
-    <div class="card"><div class="r">ii</div><h3>Remez</h3><p>A desktop data analysis tool from Argon. Local storage on DuckDB, with a licensing backend on Cloudflare Workers.</p><span class="mono tag">Tauri · DuckDB · Workers</span></div>
+    <div class="card"><div class="r">i</div><h3>F1 Replay</h3><p>A desktop replay of Formula 1 sessions, written in Rust on my own f1-data crate. Track map, HUD, leaderboard and telemetry charts.</p><span class="mono tag">Rust · Bevy · egui</span></div>
+    <div class="card"><div class="r">ii</div><h3>Truthseeker</h3><p>A desktop data analysis tool from Argon. Local storage on DuckDB, with a licensing backend on Cloudflare Workers.</p><span class="mono tag">Tauri · DuckDB · Workers</span></div>
   </div>
 </section>
 
@@ -177,21 +182,12 @@ a.pill{text-decoration:none;font-size:.82rem}
 
 <section id="reading" class="wrap" style="padding-top:12rem">
   <div class="head"><b>IV</b><span class="mono">Reading list</span></div>
-  <div class="read">
-    <div class="cat"><div class="mono">Philosophy</div><ul>
-      <li><b>Epictetus</b><span class="mono now">● reading</span></li>
-      <li><b>Søren Kierkegaard</b></li>
-      <li><b>René Girard</b><em>mimetic theory</em><span class="mono now">● reading</span></li></ul></div>
-    <div class="cat"><div class="mono">History</div><ul>
-      <li><b>Livy</b><em>The History of Rome</em><span class="mono now">● reading</span></li></ul></div>
-    <div class="cat"><div class="mono">Fiction</div><ul>
-      <li><b>Frank Herbert</b><em>Dune</em></li></ul></div>
-  </div>
+  <div class="read"><div class="cat"><div class="mono">Philosophy</div><ul><li><b>Epictetus</b></li><li><b>Fear and Trembling</b><em>Søren Kierkegaard</em></li><li><b>Desire and the Novel</b><em>René Girard</em><span class="mono now">● reading</span></li><li><b>Letters from a Stoic</b><em>Seneca</em></li></ul></div><div class="cat"><div class="mono">History &amp; politics</div><ul><li><b>The History of Rome</b><em>Livy</em><span class="mono now">● reading</span></li><li><b>Discourses on Livy</b><em>Machiavelli</em><span class="mono now">● reading</span></li></ul></div><div class="cat"><div class="mono">Fiction</div><ul><li><b>Dune</b><em>Frank Herbert</em><span class="mono now">● reading</span></li><li><b>Silence</b><em>Shūsaku Endō</em></li></ul></div><div class="cat"><div class="mono">Essays &amp; letters</div><ul><li><b>Slouching Towards Bethlehem</b><em>Joan Didion</em></li><li><b>Let Me Tell You What I Mean</b><em>Joan Didion</em></li><li><b>Letters of the Dragon</b><em>Bruce Lee</em></li></ul></div><div class="cat"><div class="mono">Ideas</div><ul><li><b>The Beginning of Infinity</b><em>David Deutsch</em></li></ul></div><div class="cat"><div class="mono">Design</div><ul><li><b>Designing Design</b><em>Kenya Hara</em></li><li><b>The Design of Everyday Things</b><em>Don Norman</em><span class="mono now">● reading</span></li><li><b>Figures of Speech</b><em>Virgil Abloh</em></li></ul></div></div>
 </section>
 
 <section id="soundtrack" class="wrap" style="padding-top:9rem">
   <div class="head"><b>V</b><span class="mono">Soundtrack</span></div>
-  <div class="panel"><p>The playlist that goes along with this site.</p><a class="go" href="https://open.spotify.com/playlist/4lpwThdhNV0W4NSD8n6mWr" target="_blank" rel="noopener">♪ Design playlist on Spotify ↗</a></div>
+  <div class="panel"><p>The playlist that inspired the design of this site.</p><a class="go" href="https://open.spotify.com/playlist/4lpwThdhNV0W4NSD8n6mWr" target="_blank" rel="noopener">♪ Design playlist on Spotify ↗</a></div>
 </section>
 
 <section id="elsewhere" class="wrap" style="padding-top:9rem">
@@ -203,7 +199,7 @@ a.pill{text-decoration:none;font-size:.82rem}
   </div>
 </section>
 
-<div class="insc"><p>PER ASPERA<br>AD ASTRA</p><span class="mono">Through hardship, to the stars</span></div>
+<div class="insc"><blockquote><p>“I claim a good part of my nights for study; I have no time for sleep: I just succumb to it, keeping my eyes at their work when they are heavy-lidded and exhausted from lack of rest.”</p><span class="mono">— Seneca</span></blockquote></div>
 
 <section id="contact" class="wrap" style="padding-bottom:2rem">
   <div class="contact">
