@@ -1,47 +1,53 @@
 # jehumtine.github.io
 
-One drawing. Dashed lines are intent, solid lines are achievement, and every
-placed joint becomes a star.
+A blueprint. The site is one engineering drawing, white line on slate: a
+lattice tower going up the right side of the sheet, one tier per project.
+Scroll is the climb, and the camera pauses on each tier so its panel can be
+read.
+
+- **Solid** members: finished work.
+- **Dashed** construction lines: work in progress.
+- It is a working site: people rivet, weld, paint, climb and carry on every
+  tier, hoist cages run up the side, a yard works at the foot, and a tower
+  crane on top builds the next tier toward the star.
+- Constellations draw themselves in and fade behind the sheet.
+- Every tier has a detail box with that project's drawing, a numbered
+  balloon, and a dimension line with its name in English and Japanese.
+- Crossing into a tier hard-cuts to an Evangelion-style title card.
+- The tower ends in a dashed spire and a star. Contact lives there.
+
+## Adding or finishing a project
+
+`src/campaigns.js` lists the tiers bottom to top. Flip a tier's `status`
+from `'intent'` to `'done'` and it is built: its members and detail drawing
+go solid and its panel says 完. The crane and crew always work on the first
+unfinished tier (or a new one above the top when everything is done). Keep
+finished tiers below unfinished ones. Unready tiers are commented out in
+`campaigns.js` and `index.html`.
+
+A new tier needs an entry there, a drawing function in `src/frieze.js`
+(`SCENES[id]`), and an `<article data-k="id">` panel in `index.html`.
 
 ## Modules
 
-`index.html` holds markup and content only. All logic lives in `src/` and
-loads as native ES modules — no build step, no dependencies. Push to `main`,
-GitHub Pages serves it.
+No build step and no external code; just a canvas.
 
-| file | owns | may not |
-|---|---|---|
-| `world.js` | the forum as data: parts, the `links` dependency graph, props, lamps, build rules (`canPlace`, `claim`) | touch the DOM, know about time |
-| `figures.js` | costume paths per trade, two-bone IK, the pose vocabulary | touch the DOM, read the world |
-| `actors.js` | the workforce state machines (walk → pick → carry → build) | create elements; it calls `fx` |
-| `props.js` | crane, dog, ox | draw themselves |
-| `render.js` | every SVG element in the scene, and `place()` | decide anything |
-| `people.js` | an actor's SVG and its per-frame pose | run the clock |
-| `camera.js` | how the world is framed | — |
-| `streak.js` | the day-365 bar | — |
-| `main.js` | wiring, the clock, resize, reduced motion | contain logic |
-| `site.css` | the skin | — |
-
-The seam that keeps this honest: simulation never writes to the DOM. Actors
-receive an `fx` object (`{place, ladder, dropLadder, spark, toggleLamp,
-skyStar}`) and everything they want to happen goes through it. That is why
-`tools/sim-test.mjs` can run the entire build with no browser.
+| file | owns |
+|---|---|
+| `plate.js` | the drawing: grid, footing, tower, detail boxes, crew, star, sheet border, camera |
+| `pen.js` | flat line drawing: segments, solid vs dashed ink |
+| `figures.js` | the drawing vocabulary: people, poses, horses, chariots, drones, chips… |
+| `frieze.js` | `SCENES`: one detail drawing per project (no DOM) |
+| `campaigns.js` | tier data and status |
+| `main.js` | scroll → progress, panels, title cards, gauge, readout |
+| `streak.js` | the run-10k bar |
 
 ## Checks
 
 ```sh
-node tools/sim-test.mjs
+node tools/frieze-check.mjs            # every stroke of every scene inside its band
+node tools/frieze-check.mjs proof.svg  # plus a flat proof print
 ```
 
-Builds the whole forum headlessly in ~144 simulated seconds and asserts that
-no part is ever placed before something it rests on. If that fails, the
-constellation is lying.
-
-## Next
-
-`camera.js` has a `progress` value that nothing writes yet. That is the seam
-for making scroll drive the build: scroll → `setProgressTarget` → the camera
-moves instead of re-fitting the viewport.
-
-`window.__site` exposes `{world, build, scene, camera, cast, viewport, tick}`
-in the browser; `tick(dt, now)` advances the world by hand.
+`?still` on the URL disables title cards, easing and the plotter draw-in (for
+screenshots). `window.__site.go('f1')` jumps the climb to a tier.

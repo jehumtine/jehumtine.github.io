@@ -1,193 +1,123 @@
-// main.js — wiring. Nothing here knows how anything is drawn or how anything
-// is simulated; it starts the clock and connects the pieces.
+// main.js — wiring. Scroll is the climb: it becomes a progress value, the
+// plate moves its camera up the tower from it, and the page cuts between
+// panes and title cards as the camera crosses from one tier to the next.
 
-import { buildWorld, createBuildState, claim, clearClaimFlags } from './world.js';
-import { createCast, stepActor } from './actors.js';
-import { createScene } from './render.js';
-import { createFigure, drawFigure } from './people.js';
-import { createCamera } from './camera.js';
-import { createCrane, stepCrane, createDog, stepDog, createOx, stepOx } from './props.js';
+import { createPlate } from './plate.js';
+import { CAMPAIGNS, SUMMIT, KANJI_NUM } from './campaigns.js';
 import { initStreak } from './streak.js';
 
 const field = document.getElementById('field');
-const svg = document.getElementById('site');
+const canvas = document.getElementById('gl');
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const still = /[?&]still/.test(location.search); // ?still: no cards, no easing — for screenshots
+const noCards = reduced || still;
 
-const world = buildWorld();
-const build = createBuildState();
-const scene = createScene(svg, world);
-const camera = createCamera();
-const crane = scene.crane;
-const dog = createDog();
-const ox = createOx();
-const cast = createCast();
+if (document.documentElement.classList.contains('phone')) throw new Error('phone: guard shown');
 
-const figures = cast.list.map((w) => createFigure(w, scene.groups.gPeople, scene.groups.gFx));
-const dogFig = scene.createDogFig();
-const oxFig = scene.createOxFig();
+const plate = createPlate(canvas);
+if (still) plate.drawIn = false;
+const ALL = [...CAMPAIGNS, SUMMIT];
+const byId = Object.fromEntries(ALL.map((c) => [c.id, c]));
 
-const viewport = { minX: 0, maxX: 1200, pickX: 100, sc: 1.3 };
-
-const fx = {
-  place: (i) => scene.place(i, build),
-  ladder: (w, top) => { w.lad = scene.makeLadder(w.x, top, viewport.sc); },
-  dropLadder: (w) => { if (w.lad) { w.lad.remove(); w.lad = null; } },
-  spark: (x, y) => scene.spark(x, y),
-  toggleLamp: (i) => {
-    world.lamps[i].on = !world.lamps[i].on;
-    scene.drawLamps();
-  },
-  skyStar: () => scene.skyStar(),
-};
-
-const ctx = {
-  world,
-  build,
-  viewport,
-  fx,
-  ox,
-  get sc() { return viewport.sc; },
-  get pickX() { return viewport.pickX; },
-  claim: (role) => claim(world, build.placed, role),
-};
-
-/* ------------------------------------------------------------------ *
- * Sizing
- * ------------------------------------------------------------------ */
+/* ---------------- sizing ---------------- */
+let W = 0, H = 0;
 function resize() {
-  const vw = field.clientWidth;
-  const vh = field.clientHeight;
-  const view = camera.frame(vw, vh);
-  const { pickX } = scene.resize(view, vw, vh);
+  W = field.clientWidth; H = field.clientHeight;
+  plate.resize(W, H);
+}
+addEventListener('resize', resize);
+resize();
 
-  Object.assign(viewport, view, { pickX });
+/* ---------------- scroll → progress ---------------- */
+const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
+let target = 0, prog = 0;
+const readScroll = () => { target = Math.min(1, Math.max(0, scrollY / maxScroll())); };
+addEventListener('scroll', readScroll, { passive: true });
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-  // place the workforce on first layout only — after that it moves itself
-  cast.list.forEach((w, q) => {
-    if (!w.init && w.role !== 'astro') {
-      w.x = w.role === 'lamp' ? world.lamps[0].x : pickX + q * 16 * view.sc;
-      w.init = 1;
-    }
-  });
-  if (!dog.init) {
-    dog.x = pickX + 60 * view.sc;
-    dog.init = 1;
+// nav + gauge marks jump the climb to a campaign
+function go(id) {
+  scrollTo({ top: plate.progressOf(id) * maxScroll() + 2, behavior: reduced ? 'auto' : 'smooth' });
+}
+document.querySelectorAll('.bar nav a').forEach((a) => a.addEventListener('click', (e) => {
+  e.preventDefault();
+  go(a.getAttribute('href').slice(1));
+}));
+
+/* ---------------- gauge ---------------- */
+const marks = document.querySelector('.gauge .marks');
+const nowEl = document.querySelector('.gauge .now');
+ALL.forEach((c) => {
+  const m = document.createElement('button');
+  m.className = 'mark' + (c.status === 'intent' ? ' intent' : '');
+  m.style.bottom = (plate.progressOf(c.id) * 100).toFixed(2) + '%';
+  m.textContent = c.n;
+  m.title = c.en;
+  m.addEventListener('click', () => go(c.id));
+  marks.appendChild(m);
+});
+document.getElementById('turns').textContent = CAMPAIGNS.length;
+
+/* ---------------- panes and title cards ---------------- */
+const panes = [...document.querySelectorAll('.pane')];
+const card = document.querySelector('.card');
+const setText = (sel, t) => { card.querySelector(sel).textContent = t; };
+let active = null, lastCard = -1e9, cardTimer = 0;
+
+function showCard(c) {
+  const idx = ALL.indexOf(c) + 1;
+  setText('.c-ep', 'Tier ' + c.n + (c.status === 'intent' ? ' — in progress' : ''));
+  setText('.c-kan', '第' + KANJI_NUM[idx] + '層' + (c.status === 'intent' ? ' · 未完' : ''));
+  card.querySelector('.c-la').innerHTML = c.en.toUpperCase().replace(' ', '<br>');
+  setText('.c-jp', c.jp);
+  setText('.c-en', c.sub);
+  card.classList.remove('on'); void card.offsetWidth; card.classList.add('on');
+  clearTimeout(cardTimer);
+  cardTimer = setTimeout(() => card.classList.remove('on'), 1050);
+}
+
+function setActive(id, now) {
+  if (id === active) return;
+  const first = active === null;
+  active = id;
+  panes.forEach((p) => p.classList.toggle('on', p.dataset.k === id));
+  const c = byId[id];
+  document.getElementById('cname').textContent = c ? c.en.toUpperCase() : 'THE BASE';
+  // a hard cut, Gainax style — but never on load, and never in a flurry
+  if (!first && c && !noCards && now - lastCard > 1400 && Math.abs(target - prog) < 0.08) {
+    lastCard = now;
+    showCard(c);
   }
 }
 
-let resizeTimer = 0;
-addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(resize, 120);
-});
+/* ---------------- readout, stepped at 12fps like a 90s HUD ---------------- */
+const pesEl = document.getElementById('pes'), spiraEl = document.getElementById('spira');
+let lastStep = 0;
+function readout(now) {
+  if (now - lastStep < 83) return;
+  lastStep = now;
+  pesEl.textContent = String(Math.round(plate.elevation(prog) * 10)).padStart(3, '0');
+  spiraEl.textContent = plate.tierAt(prog);
+  nowEl.style.bottom = (prog * 100).toFixed(2) + '%';
+}
 
-/* ------------------------------------------------------------------ *
- * Frame
- * ------------------------------------------------------------------ */
+/* ---------------- the loop ---------------- */
 let last = 0;
-let tt = 0;
-let doneAt = 0;
-let resetting = false;
-let visible = true;
-
 function frame(now) {
   requestAnimationFrame(frame);
-  if (!visible) return;
   const dt = Math.min(0.05, (now - last) / 1000 || 0);
   last = now;
-  tick(dt, now);
+  prog += (target - prog) * (reduced || still ? 1 : 1 - Math.exp(-dt * 3.2)); // soft follow
+  if (Math.abs(target - prog) < 1e-5) prog = target;
+
+  plate.frame(prog, now / 1000);
+  setActive(plate.sectionAt(prog), now);
+  readout(now);
 }
 
-// one step of the world. Split out of frame() so it can be driven by hand
-// (headless checks) and, later, by the scroll camera.
-function tick(dt, now) {
-  tt += dt;
-
-  scene.advanceGrow(dt);
-  scene.stepSparks(dt);
-  scene.drawBirds(dt, tt);
-
-  stepDog(dog, dt, ctx);
-  scene.drawDog(dog, dogFig);
-
-  scene.animateStations(tt);
-  scene.animateWheel(tt);
-
-  stepOx(ox, dt, ctx);
-  scene.drawOx(ox, oxFig);
-
-  if (resetting) return;
-
-  cast.list.forEach((w, q) => {
-    stepActor(w, dt, ctx);
-    drawFigure(figures[q], w, viewport.sc);
-  });
-
-  stepCrane(crane, dt, ctx);
-  scene.drawCrane(crane);
-
-  if (build.placed.filter(Boolean).length === world.parts.length) {
-    if (!doneAt) doneAt = now;
-    if (now - doneAt > 9000) {
-      resetting = true;
-      scene.fadePlaced();
-      setTimeout(resetAll, 1800);
-    }
-  }
-}
-
-function resetAll() {
-  scene.clearPlaced();
-  build.placed = [];
-  build.drawn = {};
-  clearClaimFlags(world);
-  doneAt = 0;
-
-  cast.list.forEach((w) => {
-    if (w.lad) { w.lad.remove(); w.lad = null; }
-    w.y = 0;
-    w.carry = false;
-    w.job = -1;
-    w.fly = null;
-    w.rope = null;
-    w.stn = null;
-    if (/^(mason|cart|climber|painter|sculptor)$/.test(w.role)) w.st = 'ret';
-  });
-  world.props.forEach((q) => { q.who = null; });
-
-  crane.st = 'idle';
-  crane.hold = false;
-  crane.job = -1;
-  crane.tx = 1000;
-  crane.len = 14;
-
-  scene.unfadePlaced();
-  resetting = false;
-}
-
-/* ------------------------------------------------------------------ *
- * Start
- * ------------------------------------------------------------------ */
-resize();
 initStreak();
+scrollTo(0, 0);
+readScroll();
+requestAnimationFrame(frame);
 
-const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-if (reduced) {
-  world.parts.forEach((p) => scene.place(p.i, build));
-  world.lamps.forEach((l) => { l.on = true; });
-  scene.drawLamps();
-  cast.list.forEach((w, q) => {
-    if (w.role !== 'astro') w.pose = 'stand';
-    drawFigure(figures[q], w, viewport.sc);
-  });
-  scene.drawCrane(crane);
-  scene.drawDog(dog, dogFig);
-  scene.drawOx(ox, oxFig);
-} else {
-  requestAnimationFrame(frame);
-}
-
-document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
-
-// handy while developing the next stage (scroll camera), and for headless checks
-window.__site = { world, build, scene, camera, cast, viewport, tick };
+window.__site = { plate, go, get progress() { return prog; } };
