@@ -36,6 +36,8 @@ const SERIF = '"Noto Serif JP", serif';
 
 // camera stops: the ground, each tier, the summit
 const STOPS = [0.38, ...CAMPAIGNS.map((_, i) => BASE + i * T + 0.5 * T), EXTRA ? TOP + 0.5 : STAR - 0.14];
+// on a phone the window is shorter: sit lower at the ground, higher at the summit
+const STOPS_M = [0.29, ...STOPS.slice(1, -1).map((y) => y + 0.07), EXTRA ? TOP + 0.6 : STAR - 0.14];
 const IDS = ['intro', ...CAMPAIGNS.map((c) => c.id), SUMMIT.id];
 const S = STOPS.length;
 
@@ -102,21 +104,23 @@ const CREWS = CAMPAIGNS.map((_, i) => {
 export function createPlate(canvas) {
   const ctx = canvas.getContext('2d');
   let W = 1, H = 1, dpr = 1, s = 1, WW = 1;   // WW: sheet width in world units
+  let M = false;                              // portrait: a window on the drawing, tower centred
   const seen = new Array(N).fill(-1);
   let drawIn = true;
 
   /* ---------------- layout, in world units ---------------- */
-  const TX = () => 0.79 * WW;
-  const HW0 = () => 0.068 * WW, HW1 = () => 0.04 * WW;
+  const TX = () => (M ? 0.5 : 0.79) * WW;
+  const HW0 = () => (M ? 0.17 : 0.068) * WW, HW1 = () => (M ? 0.1 : 0.04) * WW;
   const hw = (y) => lerp(HW0(), HW1(), clamp((y - BASE) / (TAPER - BASE)));
   const L = (y) => TX() - hw(y), R = (y) => TX() + hw(y);
   const BOX = () => ({ x0: 0.022 * WW, x1: 0.577 * WW });   // matches .panel in site.css
 
   /* ---------------- camera ---------------- */
   function camAt(p) {
+    const st = M ? STOPS_M : STOPS;
     const f = clamp(p * (S - 1), 0, S - 1);
     const i = Math.min(S - 2, Math.floor(f));
-    return lerp(STOPS[i], STOPS[i + 1], smooth(0.12, 0.88, f - i));
+    return lerp(st[i], st[i + 1], smooth(0.12, 0.88, f - i));
   }
 
   /* ---------------- drawing helpers ---------------- */
@@ -159,8 +163,8 @@ export function createPlate(canvas) {
       ctx.fillStyle = INK; ctx.fillRect(u * W, SY(y), r, r);
     });
     ctx.lineWidth = 1; ctx.strokeStyle = INK;
-    CONST.forEach((c) => {
-      if (c.cy < py - 0.75 || c.cy > py + 0.75) return;
+    CONST.forEach((c, ci) => {
+      if (c.cy < py - 0.75 || c.cy > py + 0.75 || (M && ci % 2)) return;
       // each constellation draws itself in, holds, and fades, on its own clock
       const t = ((now + c.ph) % c.per) / c.per;
       const grow = smooth(0, 0.35, t), fade = 1 - smooth(0.8, 1, t);
@@ -278,7 +282,7 @@ export function createPlate(canvas) {
       [[L, 1], [R, -1]].forEach(([F, d]) => {
         seg(lk, F(a), a, F(b), b);
         seg(lk, F(a) + d * q, a, F(b) + d * q, b);
-        if (lk === solid) for (let y = a, z = 0; y < b - 1e-6; y += 0.028, z ^= 1) {
+        if (lk === solid && !M) for (let y = a, z = 0; y < b - 1e-6; y += 0.028, z ^= 1) {
           const y2 = Math.min(b, y + 0.028);
           seg(faint, F(y) + (z ? d * q : 0), y, F(y2) + (z ? 0 : d * q), y2);
         }
@@ -454,13 +458,13 @@ export function createPlate(canvas) {
     const u = (sin(now * 0.4) + 1) / 2;
     man(p, lx + 0.004, lerp(ZONE + 0.02, DECK - 0.17, u), { P: climbPose(u * 30), k, dir: -1 });
     flush(p);
-    text('CREW AT WORK · 施工中', X(L(DECK) - 0.05), Y(DECK) + 4, { size: 10, align: 'right', color: FAINT, spacing: 2 });
+    if (!M) text('CREW AT WORK · 施工中', X(L(DECK) - 0.05), Y(DECK) + 4, { size: 10, align: 'right', color: FAINT, spacing: 2 });
   }
 
   /* ---------------- the detail boxes ---------------- */
   function detail(i, now) {
     const c = CAMPAIGNS[i];
-    if (c.wide) return;
+    if (c.wide || M) return;       // on phones the drawing lives in the section instead
     const sc = SCN[i], box = BOX();
     const cy = STOPS[i + 1], top = cy + 0.43, bot = cy + 0.12;
     if (top < camY - 0.5 || bot > camY + 0.5) return;
@@ -520,6 +524,7 @@ export function createPlate(canvas) {
 
   /* ---------------- the sheet border, fixed to the screen ---------------- */
   function border() {
+    if (M) return;
     const m = 8;
     ctx.lineWidth = 1; ctx.strokeStyle = FAINT; ctx.strokeRect(m, m, W - 2 * m, H - 2 * m);
     const cols = 'ABCDEFGH';
@@ -532,8 +537,10 @@ export function createPlate(canvas) {
   }
 
   /* ---------------- frame ---------------- */
-  function frame(p, now) {
-    camY = camAt(p);
+  // dy shifts the camera up or down from the stop, in world units (the
+  // phone interludes drift with their position on the screen)
+  function frame(p, now, dy = 0) {
+    camY = camAt(p) + dy;
     solid.length = dashed.length = faint.length = 0;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
@@ -553,10 +560,11 @@ export function createPlate(canvas) {
     border();
   }
 
-  function resize(w, h) {
-    W = w; H = h; dpr = Math.min(2, devicePixelRatio || 1);
+  function resize(w, h, mobile = false) {
+    W = w; H = h; M = mobile; dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-    s = H; WW = W / s;
+    s = M ? H / 0.75 : H;          // the phone window shows three quarters of a tier
+    WW = W / s;
   }
 
   return {
@@ -568,4 +576,45 @@ export function createPlate(canvas) {
     tierAt: (p) => Math.min(N, Math.max(0, Math.round(p * (S - 1)))),
     elevation: (p) => camAt(p),
   };
+}
+
+// One campaign's drawing on its own small canvas, for the phone layout:
+// laid out in rows to fit the width, plotted in up to fraction t.
+export function drawScene(canvas, id, cssW, t = 1) {
+  const i = CAMPAIGNS.findIndex((c) => c.id === id);
+  if (i < 0 || !cssW) return;
+  const sc = SCN[i], c = CAMPAIGNS[i];
+  const rows = Math.max(2, Math.round(sc.len / 2.4)), pad = 6;
+  const per = sc.len / rows, k = (cssW - pad * 2) / per, rowH = 0.9 * k;
+  const cssH = Math.round(rows * rowH + pad * 2);
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+    canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+    canvas.style.height = cssH + 'px';
+  }
+  const g = canvas.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, cssW, cssH);
+  const put = (a, b, c2, d) => {
+    const r = Math.min(rows - 1, Math.max(0, Math.floor(((a + c2) / 2) / per)));
+    const base = pad + (r + 1) * rowH;
+    g.moveTo(pad + (a - r * per) * k, base - b * k);
+    g.lineTo(pad + (c2 - r * per) * k, base - d * k);
+  };
+  const seg4 = sc.segs, n = Math.floor((seg4.length / 4) * t) * 4;
+  g.beginPath();
+  for (let j = 0; j < n; j += 4) {
+    const x1 = seg4[j], y1 = seg4[j + 1], x2 = seg4[j + 2], y2 = seg4[j + 3];
+    const r1 = Math.min(rows - 1, Math.floor(x1 / per)), r2 = Math.min(rows - 1, Math.floor(x2 / per));
+    if (r1 !== r2) {
+      const xb = Math.max(r1, r2) * per, u = (xb - x1) / (x2 - x1), yb = y1 + (y2 - y1) * u;
+      put(x1, y1, xb - 1e-6, yb); put(xb + 1e-6, yb, x2, y2);
+    } else put(x1, y1, x2, y2);
+  }
+  g.lineWidth = 1.1; g.strokeStyle = INK; g.setLineDash(c.status === 'done' ? [] : [5, 4]);
+  g.stroke();
+  g.setLineDash([2, 5]); g.strokeStyle = FAINT; g.lineWidth = 1;
+  g.beginPath();
+  for (let r = 1; r < rows; r++) { g.moveTo(pad, pad + r * rowH + 0.5); g.lineTo(cssW - pad, pad + r * rowH + 0.5); }
+  g.stroke(); g.setLineDash([]);
 }

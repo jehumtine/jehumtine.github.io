@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jehu Mtine</title>
-<script>(function(){var u=navigator.userAgent||'',p=/Android.*Mobile|iPhone|iPod|Windows Phone|BlackBerry|Opera Mini|IEMobile|webOS/i.test(u)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500)||location.search.indexOf('phone')>-1;if(p)document.documentElement.classList.add('phone');if(/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\//i.test(u))document.documentElement.classList.add('inapp')})();</script>
+<script>
+// Phones get the full site in a stacked layout. GUARD is the fallback: set it to true and phones see
+// the desktop-only screen instead ("It wouldn't be an art piece…"). ?guard forces that screen, ?mobile the layout.
+(function(){var GUARD=false;
+var d=document.documentElement,u=navigator.userAgent||'',q=location.search;
+var phone=/Android.*Mobile|iPhone|iPod|Windows Phone|BlackBerry|Opera Mini|IEMobile|webOS/i.test(u)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500);
+if((GUARD&&phone)||q.indexOf('guard')>-1)d.classList.add('phone');
+if(/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\//i.test(u))d.classList.add('inapp');
+if(q.indexOf('mobile')>-1||matchMedia('(max-width:760px), (orientation:portrait) and (max-width:1100px)').matches)d.classList.add('m');})();
+</script>
 <meta name="description" content="Jehu Mtine. Building @ argonintelligence.org, and going from the beginning of the computing age to the stars.">
 <meta name="theme-color" content="#2a4357">
 <link rel="icon" href="favicon.ico" sizes="48x48">
@@ -36,7 +45,7 @@
 <script>(function(){var a=document.getElementById('out');if(!a)return;var u=navigator.userAgent,t=location.host+location.pathname;a.href=/Android/i.test(u)?'intent://'+t+'#Intent;scheme=https;end':'x-safari-https://'+t;})();</script>
 <div id="field"><canvas id="gl" role="img" aria-label="A blueprint: a lattice tower drawn in white line on slate blue, one tier per project. Finished tiers are solid, unfinished ones are dashed construction lines, and a crew of builders, a crane and hoists are at work on it. It ends in a star."></canvas></div>
 <div class="frame"></div>
-<div class="bar mono"><span>Jehu Mtine · Lusaka</span><nav><a href="#initium">Belief</a><a href="#argon">Projects</a><a href="#reading">Reading</a><a href="#astra">Contact</a></nav></div>
+<div class="bar mono"><span>Jehu Mtine · Lusaka</span><button class="menu mono" type="button" aria-expanded="false" aria-controls="nav">Index</button><nav id="nav"><a href="#initium">Belief</a><a href="#argon">Projects</a><a href="#reading">Reading</a><a href="#astra">Contact</a></nav></div>
 
 <div class="hud">
   <section class="pane hero" data-k="intro">
@@ -112,6 +121,10 @@
     <a class="mail" href="mailto:jehumtine@argonintelligence.org">jehumtine@argonintelligence.org</a>
     <footer class="mono">Lusaka, Zambia · © Jehu Mtine · Argon Intelligence</footer>
   </article>
+  <aside class="egg">
+    <svg viewBox="0 0 120 50" aria-hidden="true"><line x1="8" y1="38" x2="34" y2="20"/><line x1="34" y1="20" x2="60" y2="28"/><line x1="60" y1="28" x2="84" y2="8"/><line x1="84" y1="8" x2="112" y2="24"/><circle cx="8" cy="38" r="2.2"/><circle cx="34" cy="20" r="2.6"/><circle cx="60" cy="28" r="2.2"/><circle cx="84" cy="8" r="3.2"/><circle cx="112" cy="24" r="2.2"/></svg>
+    <span class="mono">The crew (myself and I) is working on a bigger site. Come see it on desktop.</span>
+  </aside>
 
   <div class="gauge mono" aria-hidden="true"><div class="rail"></div><div class="marks"></div><div class="now"><span></span></div></div>
   <div class="tblock mono" aria-hidden="true"><div class="tb-n"><small>Drawn by</small>JEHU MTINE</div><div><small>Plate</small>01 · 図面</div><div><small>Place</small>LUSAKA</div><div><small>Rev</small>2026</div><div class="tb-s"><small>Approved</small><span class="seal" lang="ja">星</span></div></div>

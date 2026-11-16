@@ -127,3 +127,50 @@ html.inapp .gin .out-hint{display:block;color:var(--pale)}
 .gin .seal{position:absolute;top:1.6rem;right:1.6rem;width:2.8rem;height:2.8rem;font-size:1.5rem}
 
 @media (prefers-reduced-motion:reduce){.pane.on,.hint{animation:none}}
+
+/* ================================================================
+   Phones and portrait tablets (html.m): a fixed window on the drawing
+   at the top, the sections as an ordinary page scrolling beneath it.
+   ================================================================ */
+.menu,.fig,.egg,.inter{display:none}
+html.m body{background:var(--paper)}
+html.m #track,html.m .gauge,html.m .tblock,html.m .readout,html.m #field,html.m .frame{display:none}
+/* the bar scrolls away with the page; the index is a button that floats */
+html.m .bar{position:absolute;top:8px;left:8px;right:8px;padding:1.1rem 1.3rem;font-size:.58rem}
+html.m .bar nav{display:none}
+html.m .menu{display:block;position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:55;height:48px;padding:0 1.1rem;background:var(--deep);border:1px solid rgba(246,244,238,.5);color:var(--paper);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;border-radius:24px;cursor:pointer;box-shadow:0 4px 18px rgba(13,24,34,.35)}
+/* the live views of the tower between sections */
+html.m .inter{display:block;margin:0 0 8px;border-radius:14px;overflow:hidden;background:var(--blue)}
+html.m .inter canvas{display:block;width:100%;height:min(82vw,360px)}
+/* the index, opened from the menu: a title card of its own */
+html.m.menu-open .bar nav{display:flex;position:fixed;inset:0;z-index:60;background:var(--deep);flex-direction:column;justify-content:center;align-items:flex-start;gap:.4rem;padding:2rem 1.6rem}
+html.m.menu-open .bar nav a{margin:0;font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,11vw,3.4rem);line-height:1.15;letter-spacing:-.01em;text-transform:none;opacity:1;padding:.2rem 0}
+html.m.menu-open .menu{z-index:61}
+/* the page */
+html.m .hud{position:relative;inset:auto;z-index:10;pointer-events:auto;padding:8px 8px 30svh}
+html.m .pane{position:relative;visibility:visible;animation:none;inset:auto;width:auto;max-height:none;overflow:visible;margin:0 0 8px;border-radius:14px}
+html.m .hero{background:var(--blue);padding:4.2rem 1.3rem 1.6rem;max-width:none}
+html.m .hero .vol{font-size:clamp(3rem,17vw,5rem)}
+html.m .hint{margin-top:1.6rem}
+html.m .feat{display:flex;width:fit-content;margin:0 auto 8px;border-radius:4px}
+html.m .panel{background:var(--blue);border:0;padding:1.4rem 1.3rem 1.6rem}
+html.m .panel header b{font-size:2.2rem}
+html.m .panel h2{font-size:clamp(2rem,9vw,2.8rem)}
+html.m .panel p{font-size:1rem}
+html.m .panel .lead{font-size:clamp(1.35rem,6vw,1.8rem)}
+html.m .read{grid-template-columns:1fr;gap:.4rem}
+html.m .read li{font-size:1.2rem}
+html.m .links{grid-template-columns:1fr}
+html.m .links a{min-height:44px}
+html.m .fig{display:block;width:100%;margin:.2rem 0 1.1rem}
+html.m .astra .mail{font-size:1.05rem;word-break:break-all}
+html.m .card{inset:8px;border-radius:14px}
+html.m .cin{left:7%;right:5%}
+html.m .c-la{font-size:clamp(2.6rem,14vw,5rem)}
+/* the easter egg at the very end, the line from the old phone screen */
+html.m .egg{display:block;padding:3rem 1.3rem 2rem;color:var(--ink)}
+.egg svg{width:7rem;height:auto;overflow:visible;margin-bottom:1.2rem}
+.egg svg line{stroke:var(--blue);stroke-opacity:.6;stroke-width:1}
+.egg svg circle{fill:var(--blue)}
+.egg p{font-family:var(--serif);font-weight:900;font-size:clamp(1.5rem,7vw,2rem);line-height:1.15;margin:0 0 .8rem}
+.egg .mono{color:var(--blue)}

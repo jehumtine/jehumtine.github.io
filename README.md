@@ -16,6 +16,20 @@ read.
 - Crossing into a tier hard-cuts to an Evangelion-style title card.
 - The tower ends in a dashed spire and a star. Contact lives there.
 
+## Phones
+
+Phones and portrait tablets get a stacked layout (`html.m`): the sections
+are an ordinary scrolling page, and between them sit live views of the
+tower, one per tier (interludes), that drift upward as they pass. Only the
+ones on screen are drawn. Each tier's detail drawing sits inside its
+section, and the menu is a floating "Index" button.
+
+The old desktop-only screen ("It wouldn't be an art piece if you could view
+it on mobile") is kept as a fallback: set `GUARD=true` in the script at the
+top of `index.html`. The phone page ends with a note: the crew (myself and I)
+is working on a bigger site; come see it on desktop. `?guard` forces that screen and `?mobile` forces the
+phone layout, for testing.
+
 ## Adding or finishing a project
 
 `src/campaigns.js` lists the tiers bottom to top. Flip a tier's `status`
